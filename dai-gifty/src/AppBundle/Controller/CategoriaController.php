@@ -13,9 +13,32 @@ use Symfony\Component\HttpFoundation\Request;
 class CategoriaController extends Controller {
 
     /**
-     * @Route("/categoria")
+     * @Route("/categoria/listar", name="categoriaListar")
      */
     public function indexAction(Request $request, EntityManagerInterface $em) {
+        $repository     = $em->getRepository("AppBundle:Categoria");
+        $findAll = $repository->findAll();
+        return $this->render('categoria/listado.html.twig', array(
+            "objetos" => $findAll
+        ));
+    }
+    
+    /**
+     * @Route("/categoria/eliminar/{id}", name="categoriaEliminar")
+     */
+    public function eliminarAction($id, Request $request, EntityManagerInterface $em) {
+        $repository = $em->getRepository("AppBundle:Categoria");
+        $objeto     = $repository->find($id);
+        $em->remove($objeto);
+        $em->flush();
+        return $this->redirectToRoute('categoriaListar');
+    }
+    
+    // TODO: crear una clase para el formulario
+    /**
+     * @Route("/categoria/crear", name="categoriaCrear")
+     */
+    public function guardarAction(Request $request, EntityManagerInterface $em) {
         $categoria = new \AppBundle\Entity\Categoria();
 
         $form = $this->createFormBuilder($categoria)
@@ -37,7 +60,7 @@ class CategoriaController extends Controller {
             $em->persist($categoria);
             $em->flush();
 
-            return $this->redirectToRoute('homepage');
+            return $this->redirectToRoute('categoriaListar');
         }
 
         return $this->render('default/new.html.twig', array(
